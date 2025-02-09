@@ -5,73 +5,112 @@ import {
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
 
-export const getAllContacts = async (req, res) => {
-  const contacts = await contactsService.listContacts();
-  if (contacts.status === 200) {
-    res.send(contacts);
-    return;
-  }
-  const error = HttpError(contacts.status);
-  res.send(error);
-};
-
-export const getOneContact = async (req, res) => {
-  const id = req.params.id;
-  const contact = await contactsService.getContactById(id);
-  if (contact.status === 404) {
-    const error = HttpError(contact.status);
-    res.send(error);
-  } else {
-    res.send(contact);
+export const getAllContacts = async (_, res, next) => {
+  try {
+    const contacts = await contactsService.listContacts();
+    res.status(200).json({
+      status: "OK",
+      code: 200,
+      data: contacts,
+      message: "success",
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const deleteContact = async (req, res) => {
-  const id = req.params.id;
-  const contact = await contactsService.removeContact(id);
-  const error = HttpError(contact.status);
+export const getOneContact = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const contact = await contactsService.getContactById(id);
+    res.status(200).json({
+      status: "OK",
+      code: 200,
+      data: contact,
+      message: "success",
+    });
 
-  if (contact.status === 404) {
-    res.send(error);
-  }
-  if (contact.status === 200) {
-    res.send(JSON.stringify({ contact }));
+    if (!contact) {
+      throw HttpError(404, "Not Found");
+    }
+  } catch (error) {
+    next(error);
   }
 };
 
-export const createContact = async (req, res) => {
-  const { name, email, phone } = req.body;
-  const { error } = createContactSchema.validate({ name, email, phone });
+export const deleteContact = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const contact = await contactsService.removeContact(id);
 
-  if (error) {
-    res.send(JSON.stringify({ message: error.message }));
-    return;
-  } else {
-    await contactsService.addContact(name, email, phone);
-    res.send(JSON.stringify({ name, email, phone, status: 201 }));
-    return;
+    if (!contact) {
+      throw HttpError(404, "Not Found");
+    }
+    res.status(200).json({
+      status: "Deleted",
+      code: 200,
+      data: contact,
+      message: "Deleted successfully",
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const updateContact = async (req, res) => {
-  const data = req.body;
-  const { error } = updateContactSchema.validate(data);
-  if (!data) {
-    res.send(JSON.stringify({ message: "Body must have at least one field" }));
-    return;
+export const createContact = async (req, res, next) => {
+  try {
+    const { name, email, phone, favorite } = req.body;
+    const { error } = createContactSchema.validate({
+      name,
+      email,
+      phone,
+      favorite,
+    });
+
+    if (error) {
+      throw HttpError(400, error.message);
+    }
+    const createdContact = await contactsService.addContact(name, email, phone);
+    res.status(201).json({
+      status: "Created",
+      code: 201,
+      data: createdContact,
+      message: "Created successfully",
+    });
+  } catch (error) {
+    next(error);
   }
-  if (error) {
-    res.send(JSON.stringify({ message: error.message, status: 400 }));
-    return;
-  }
-  const id = req.params.id;
-  const contact = await contactsService.updateContact(data, id);
-  if (contact.status === 200) {
-    res.send(
-      JSON.stringify({ data: contact.foundData, status: contact.status })
+};
+
+export const updateContact = async (req, res, next) => {
+  try {
+    const { name, email, phone, favorite } = req.body;
+    const { error } = updateContactSchema.validate({
+      name,
+      email,
+      phone,
+      favorite,
+    });
+    if (error) {
+      throw HttpError(400, "Bad Rquest");
+    }
+    const id = req.params.id;
+    const contact = await contactsService.updateContact(
+      { name, email, phone, favorite },
+      id
     );
-  }
-  if (contact.status === 404) {
-    res.send(JSON.stringify(contact.message));
+
+    if (!contact) {
+      throw HttpError(404, "Not Found");
+    }
+
+    res.status(200).json({
+      status: "Updated",
+      code: 200,
+      data: contact,
+      message: "Updated successfully",
+    });
+  } catch (error) {
+    next(error);
   }
 };
