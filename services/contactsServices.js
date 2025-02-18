@@ -1,8 +1,13 @@
 import { Contact } from "../schemas/contactsSchemas.js";
 
-async function listContacts() {
-  const data = await Contact.find({});
-  return data;
+async function listContacts(skip = 0, limit = 10, favorite = false) {
+  if (favorite) {
+    const data = await Contact.find({ favorite }, "", { skip, limit });
+    return data;
+  } else {
+    const data = await Contact.find({}, "", { skip, limit });
+    return data;
+  }
 }
 
 async function getContactById(contactId) {

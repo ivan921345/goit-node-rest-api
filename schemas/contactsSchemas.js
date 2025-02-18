@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { Schema, model, version } from "mongoose";
+import { Schema, model } from "mongoose";
 
 export const createContactSchema = Joi.object({
   name: Joi.string().required(),
@@ -29,6 +29,10 @@ const contact = new Schema(
     favorite: {
       type: Boolean,
       default: false,
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
     },
   },
   { versionKey: false, timestamps: true }

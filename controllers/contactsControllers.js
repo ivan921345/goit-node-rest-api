@@ -5,9 +5,12 @@ import {
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
 
-export const getAllContacts = async (_, res, next) => {
+export const getAllContacts = async (req, res, next) => {
+  const { limit, page, favorite } = req.query;
+  const skip = (page - 1) * limit;
+
   try {
-    const contacts = await contactsService.listContacts();
+    const contacts = await contactsService.listContacts(skip, limit, favorite);
     res.status(200).json({
       status: "OK",
       code: 200,
