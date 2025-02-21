@@ -1,6 +1,8 @@
 import bcryptjs from "bcryptjs";
 import jsonwebtoken from "jsonwebtoken";
 import dotenv from "dotenv";
+import gravatar from "gravatar";
+
 dotenv.config();
 
 import HttpError from "../helpers/HttpError.js";
@@ -16,9 +18,11 @@ const register = async (req, res, next) => {
     throw HttpError(409);
   }
 
+  const avatarURL = gravatar.url(email);
+
   const hashedPassword = await bcryptjs.hash(password, 10);
 
-  await User.create({ ...req.body, password: hashedPassword });
+  await User.create({ ...req.body, password: hashedPassword, avatarURL });
   res.status(201).json({
     message: "User has been registered",
     user: {
