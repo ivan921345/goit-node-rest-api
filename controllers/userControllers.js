@@ -82,7 +82,6 @@ const getCurrent = async (req, res, next) => {
 
 const changeSubscription = async (req, res, next) => {
   const { statusChange } = req.body;
-  clg;
   const { email } = req.user;
   if (!["starter", "pro", "business"].includes(statusChange)) {
     res.status(401),
