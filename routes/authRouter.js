@@ -18,6 +18,10 @@ router.post("/logout", authenticate, userControllers.logout);
 
 router.get("/current", authenticate, userControllers.getCurrent);
 
-router.patch("/", authenticate, userControllers.changeSubscription);
+router.patch(
+  "/change/subscription",
+  authenticate,
+  userControllers.changeSubscription
+);
 
 export default router;
